@@ -7,11 +7,12 @@ const renderTimeDate = time => time.split('T')[0]
 
 const renderDate = date => `${date.year}-${date.month}-${date.day}`
 
-const extractLatestUrlsFromSubmission = ({ assignmentSubmission }) =>
-  ((assignmentSubmission || {}).attachments || [])
-    .map((a) => (a.link || {}).url)
-    .filter((url) => !!url) // only keep URL attachments
-    .reverse() // start with most recent attachment
+const extractLatestUrlsFromSubmission = ({ assignmentSubmission }) => {
+  return ((assignmentSubmission || {}).attachments || [])
+    .map((a) => (a.driveFile || {}).id)
+    .reverse(); // start with most recent attachment
+}
+
 
 const makeStudentGetter = ({ students }) => {
   const studentSet = {}
@@ -80,9 +81,12 @@ const COMMANDS = {
       gitlabUrls.forEach((url, index) => {
         console.log(`git clone -q ${url} --depth 1 ./student-repos/${student.emailAddress}${index > 0 ? `--${index}` : ''}`)
       })
+      otherUrls.forEach((url, index) => {
+        console.log(`wget -q --no-check-certificate 'https://docs.google.com/uc?export=download&id=${url}' -O ./${student.emailAddress.split('@')[0].substring(1)}${index > 0 ? `--${index}` : ''}.c `)
+      })
     })
     console.log(`\n# Now, let's run the exercise evaluator on each downloaded repo:`)
-    console.log(`TESTER=test-ex-1-5.js ./eval-student-submissions.sh ./student-repos/*`)
+    //console.log(`TESTER=test-ex-1-5.js ./eval-student-submissions.sh ./student-repos/*`)
   }
 }
 
